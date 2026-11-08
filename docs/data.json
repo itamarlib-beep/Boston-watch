@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-08T11:50:17+00:00",
+  "updated_at": "2026-11-08T13:03:07+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
       "status": "ok",
-      "matches": 0,
+      "matches": 1,
       "cards_seen": 24,
       "cards_checked": 24,
       "images_scored": 24,
@@ -21,7 +21,28 @@
       "detail": "Findog redirected adoption/rehoming page to sales; source not trusted"
     }
   ],
-  "matches": [],
+  "matches": [
+    {
+      "id": "ea846961f65a4d6857e8",
+      "title": "בר זכר | מעורב | 1 שנים אני בר🌽\nכלב צעיר, שמח ומלא אהבה שמחפש את המשפחה שתהיה שלי לתמיד. מחוסן,",
+      "url": "https://yad4.co.il/animal/6a38bbde073cd4392aa6ff51",
+      "description": "בר זכר | מעורב | 1 שנים אני בר🌽\nכלב צעיר, שמח ומלא אהבה שמחפש את המשפחה שתהיה שלי לתמיד. מחוסן, מסורס ומשובב, אוהב אנשים ופ... לפרטים",
+      "image": "https://yad4.s3.amazonaws.com/images/9e3a6a3d-0db5-4fb2-9eee-f6b39387c3b3.png",
+      "source": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
+      "first_seen": "2026-11-08T13:03:07+00:00",
+      "breed_score": 0.0972,
+      "top_breed": "Walker hound",
+      "top5": [
+        "Walker hound",
+        "Border collie",
+        "toy terrier",
+        "Boston bull",
+        "Italian greyhound"
+      ],
+      "model": "MobileNetV3-Small ImageNet-1K",
+      "match_reason": "visual_candidate"
+    }
+  ],
   "recent_runs": [
     {
       "at": "2026-11-08T09:35:42+00:00",
@@ -47,9 +68,14 @@
       "at": "2026-11-08T11:50:17+00:00",
       "new": 0,
       "sources_ok": 1
+    },
+    {
+      "at": "2026-11-08T13:03:07+00:00",
+      "new": 1,
+      "sources_ok": 1
     }
   ],
   "email_configured": true,
-  "email_error": null,
-  "pending_email_count": 0
+  "email_error": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1011)",
+  "pending_email_count": 1
 }
