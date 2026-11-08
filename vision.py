@@ -21,6 +21,11 @@ class BreedTriage:
         p = urlparse(image_url)
         if p.scheme != 'https' or not p.hostname:
             raise ValueError('Image URL must be HTTPS')
+        # Only fetch images from explicit public media hosts; prevents untrusted HTML
+        # from making our GitHub runner request internal network resources.
+        allowed = ('yad4.s3.amazonaws.com', 'yad4.co.il', 'www.yad4.co.il')
+        if p.hostname.lower() not in allowed:
+            raise ValueError('Image host not allowlisted')
         resp = session.get(image_url, timeout=15, headers={'User-Agent': 'BostonAdoptionWatch/1.1'})
         resp.raise_for_status()
         if len(resp.content) > 5_000_000:
