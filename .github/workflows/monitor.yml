@@ -30,6 +30,9 @@ jobs:
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
+          SMTP_HOST: smtp-relay.brevo.com
+          SMTP_PORT: "587"
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: python monitor.py
       - name: Save results for dashboard
