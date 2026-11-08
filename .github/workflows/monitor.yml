@@ -11,7 +11,7 @@ concurrency:
 jobs:
   monitor:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
@@ -23,7 +23,7 @@ jobs:
       - run: pip install -r requirements.txt
       - name: Install optional image classification dependencies
         run: |
-          if grep -q '"type": "rss_visual"' config.json; then
+          if grep -Eq '"type": "(rss_visual|yad4_visual)"' config.json; then
             pip install -r requirements-vision.txt
           fi
       - name: Check public listings and send alerts
