@@ -1,42 +1,46 @@
-
 name: Test Boston Watch Email
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   test-email:
     runs-on: ubuntu-latest
+    timeout-minutes: 3
     steps:
-      - name: Send test email
+      - name: Send test email via Brevo STARTTLS
         env:
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_FROM: ${{ secrets.SMTP_FROM }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: |
           python - <<'PY'
           import os
           import smtplib
+          import ssl
           from email.message import EmailMessage
 
-          sender = os.environ["SMTP_USER"]
-          password = os.environ["SMTP_PASSWORD"]
-          recipient = os.environ["ALERT_EMAIL"]
+          required = ('SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM', 'ALERT_EMAIL')
+          missing = [key for key in required if not os.getenv(key, '').strip()]
+          if missing:
+              raise SystemExit('Missing GitHub Secrets: ' + ', '.join(missing))
 
           msg = EmailMessage()
-          msg["From"] = sender
-          msg["To"] = recipient
-          msg["Subject"] = "Boston Watch - Test Successful"
-          msg.set_content(
-              "Boston Watch email alerts are working!"
-          )
+          msg['From'] = os.environ['SMTP_FROM'].strip()
+          msg['To'] = os.environ['ALERT_EMAIL'].strip()
+          msg['Subject'] = 'Boston Watch - Brevo test successful'
+          msg.set_content('Boston Watch successfully sent this test email via Brevo.')
 
-          with smtplib.SMTP_SSL(
-              "smtp.gmail.com", 465, timeout=30
-          ) as smtp:
-              smtp.login(sender, password)
+          with smtplib.SMTP('smtp-relay.brevo.com', 587, timeout=30) as smtp:
+              smtp.ehlo()
+              smtp.starttls(context=ssl.create_default_context())
+              smtp.ehlo()
+              smtp.login(os.environ['SMTP_USER'], os.environ['SMTP_PASSWORD'])
               smtp.send_message(msg)
 
-          print("Test email sent successfully.")
+          print('Brevo SMTP accepted the test message. Check inbox and spam.')
           PY
-  
