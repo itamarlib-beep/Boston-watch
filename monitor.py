@@ -130,15 +130,18 @@ def send_email(items):
     if not all((sender, password, to)):
         print('Mail not configured: no email sent.')
         return False
-    host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
-    port = int(os.getenv('SMTP_PORT', '465'))
+    host = os.getenv('SMTP_HOST', 'smtp-relay.brevo.com')
+    port = int(os.getenv('SMTP_PORT', '587'))
     msg = EmailMessage()
-    msg['From'] = sender
+    msg['From'] = os.getenv('SMTP_FROM', sender).strip()
     msg['To'] = to
     msg['Subject'] = f'Boston Terrier watch: {len(items)} new possible match(es)'
     msg.set_content('Possible matches (verify availability and adoption terms):\n\n' + '\n\n'.join(
         f"{x['title']}\n{x['source']}\n{x['url']}\n{x['description']}" for x in items))
-    with smtplib.SMTP_SSL(host, port, timeout=25) as smtp:
+    with smtplib.SMTP(host, port, timeout=25) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
         smtp.login(sender, password)
         smtp.send_message(msg)
     return True
