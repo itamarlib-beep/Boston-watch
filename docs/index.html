@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Boston Watch | אימוץ בוסטון טרייר</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:#182230;background:#f6f8fc}body{margin:0}.wrap{max-width:1040px;margin:auto;padding:28px 20px}.hero{background:linear-gradient(125deg,#172b4d,#314d78);color:white;padding:32px;border-radius:22px}.hero h1{font-size:clamp(26px,4vw,42px);margin:0 0 8px}.hero p{color:#dce6f5;margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:13px;margin:18px 0}.stat,.panel,.item{background:white;padding:19px;border:1px solid #e3e9f0;border-radius:15px}.stat strong{font-size:25px;display:block;margin-top:6px}.muted{color:#627085}.panel{margin:18px 0}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}.item{overflow-wrap:anywhere}.item img{width:100%;max-height:190px;object-fit:cover;border-radius:9px}.item a{color:#1552a3;font-weight:700;text-decoration:none}.item p{font-size:14px;color:#5d6676;line-height:1.6}.pill{display:inline-block;border-radius:999px;padding:4px 9px;background:#e6f5ed;color:#12613a;font-size:12px}.pill.bad{background:#fce7e7;color:#922}.mini{font-size:13px}footer{font-size:12px;color:#64748b;margin-top:35px}.empty{padding:35px;text-align:center;color:#687586;border:1px dashed #ccd4dd;border-radius:14px}button{border:1px solid #ccd7e3;background:#fff;padding:9px 14px;border-radius:9px;cursor:pointer}
+</style></head><body><div class="wrap"><header class="hero"><h1>🐾 Boston Watch</h1><p>מחפשים בית לבוסטון טרייר · ניטור אוטומטי של מקורות ציבוריים בישראל</p></header>
+<section class="stats"><div class="stat"><span class="muted">התאמות שנמצאו</span><strong id="count">—</strong></div><div class="stat"><span class="muted">בדיקה אחרונה (שעון ישראל)</span><strong id="updated" style="font-size:18px">—</strong></div><div class="stat"><span class="muted">מקורות פעילים</span><strong id="sources">—</strong></div></section>
+<section class="panel"><h2>מצב המקורות</h2><div id="status" class="mini muted">טוען נתונים…</div></section>
+<section class="panel"><h2>התאמות אפשריות</h2><p class="muted mini">הופעה כאן אינה אישור לכך שהכלב עדיין זמין. יש ליצור קשר עם המפרסם ולאמת.</p><div class="grid" id="items"></div></section>
+<footer>האתר מתעדכן בעקבות בדיקות GitHub Actions. הבדיקות עלולות להתעכב; אין כיסוי מובטח לפייסבוק, ליד2 או לכלל העמותות.</footer></div>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=date=>date?new Date(date).toLocaleString('he-IL',{timeZone:'Asia/Jerusalem'}):'טרם בוצעה';
+const el=(tag,txt,cls)=>{const n=document.createElement(tag);if(txt!=null)n.textContent=txt;if(cls)n.className=cls;return n;};
+fetch('./data.json?ts='+Date.now()).then(r=>{if(!r.ok)throw Error('No data yet');return r.json()}).then(d=>{
+ $('count').textContent=d.matches.length;$('updated').textContent=fmt(d.updated_at);
+ $('sources').textContent=d.sources.filter(s=>s.status==='ok').length+' / '+d.sources.length;
+ $('status').replaceChildren(...d.sources.map(s=>{const p=el('p');p.append(el('span',s.status==='ok'?'תקין':'שגיאה',s.status==='ok'?'pill':'pill bad'),' ',el('span',' '+s.name+' · '+(s.status==='ok'?'התאמות: '+s.matches:s.detail)));return p;}));
+ if(!d.matches.length){$('items').append(el('div','לא זוהו מודעות מתאימות עד כה. הסוכן ממשיך לבדוק.','empty'));return;}
+ d.matches.forEach(x=>{const card=el('article',null,'item');if(x.image&&x.image.startsWith('https://')){const img=el('img');img.src=x.image;img.alt='תמונת המודעה';img.loading='lazy';card.append(img)}const h=el('h3');const a=el('a',x.title);a.href=x.url;a.target='_blank';a.rel='noopener noreferrer';h.append(a);if(x.match_reason==='visual_candidate'){card.append(el('span','דמיון חזותי בלבד — לבדיקה','pill'));}card.append(h,el('div',x.source+' · זוהה לראשונה: '+fmt(x.first_seen),'mini muted'),el('p',x.description));$('items').append(card)})
+}).catch(e=>{$('status').textContent='אין נתונים זמינים עדיין. יש להריץ את הפעולה הראשונה ב-GitHub Actions.';$('count').textContent='0';$('updated').textContent='—';$('sources').textContent='—';});
+</script></body></html>
