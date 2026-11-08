@@ -48,6 +48,8 @@ def listing(source, title, url, description='', image=''):
 def fetch_findog(source, config, session):
     resp = session.get(source['url'], timeout=25, headers=HEADERS)
     resp.raise_for_status()
+    if 'type=' in source['url'] and 'type=1' in str(getattr(resp, 'url', source['url'])) and 'type=1' not in source['url']:
+        raise ValueError('Findog redirected adoption/rehoming page to sales; source not trusted')
     soup = BeautifulSoup(resp.text, 'html.parser')
     text = soup.get_text(' ', strip=True)
     # The website lists unrelated recommendations after the no-results message.
@@ -71,6 +73,76 @@ def fetch_findog(source, config, session):
         src = urljoin(source['url'], img.get('src', '')) if img and img.get('src') else ''
         results.append(listing(source['name'], title, href, context, src))
     return results
+
+
+def image_url_from(tag, base):
+    """Extract a genuine HTTPS image URL from a listing card (never arbitrary page artwork)."""
+    for img in tag.select('img'):
+        for key in ('data-src', 'src', 'data-original'):
+            value = (img.get(key) or '').strip()
+            if not value and key == 'src':
+                value = (img.get('srcset') or '').split(',')[0].strip().split(' ')[0]
+            if value:
+                candidate = urljoin(base, value)
+                if candidate.startswith('https://') and not candidate.lower().endswith('.svg'):
+                    return candidate
+    return ''
+
+
+def fetch_yad4(source, config, session, vision=None):
+    """Monitor only actual dog cards on Yad4's public DOG search, not sitewide text."""
+    resp = session.get(source['url'], timeout=25, headers=HEADERS)
+    resp.raise_for_status()
+    soup = BeautifulSoup(resp.text, 'html.parser')
+    links = []
+    for a in soup.select('a[href]'):
+        href = urljoin(resp.url, a['href'])
+        p = urlparse(href)
+        if p.hostname not in ('yad4.co.il', 'www.yad4.co.il') or not p.path.startswith('/animal/'):
+            continue
+        if not p.path[len('/animal/'):].strip('/'):
+            continue
+        if href not in {x[0] for x in links}:
+            links.append((href, a))
+    if not links:
+        raise ValueError('No /animal/ links parsed: page changed or blocking; not a healthy zero-match run')
+    cap = int(source.get('max_cards', 25))
+    results = []
+    scanned_images = 0
+    for href, anchor in links[:cap]:
+        card = anchor
+        # Cards may contain an image nested inside the link. Avoid using document-wide text.
+        label = card.get_text(' ', strip=True)[:500]
+        if not label:
+            parent = anchor.parent
+            if parent:
+                label = parent.get_text(' ', strip=True)[:500]
+        if not label:
+            label = 'כלב לאימוץ ביד4'
+        if any(norm(word) in norm(label) for word in config.get('exclude_keywords', [])):
+            continue
+        image = image_url_from(card, resp.url)
+        if not image and anchor.parent:
+            image = image_url_from(anchor.parent, resp.url)
+        text_candidate = match(label, config)
+        if text_candidate:
+            row = listing(source['name'], label[:95], href, label, image)
+            row['match_reason'] = 'text'
+            results.append(row)
+            continue
+        if vision is None or not image:
+            continue
+        try:
+            prediction = vision.score(image, session)
+            scanned_images += 1
+            if prediction['breed_score'] >= float(config.get('vision_min_score', .08)):
+                row = listing(source['name'], label[:95], href, label, image)
+                row.update(prediction)
+                row['match_reason'] = 'visual_candidate'
+                results.append(row)
+        except Exception as exc:
+            print(f'VISION SKIP {href}: {exc}', file=sys.stderr)
+    return results, {'cards_seen': len(links), 'cards_checked': min(len(links), cap), 'images_scored': scanned_images, 'image_coverage': 'partial' if vision and scanned_images == 0 else 'attempted'}
 
 
 def rss_image(entry):
@@ -130,18 +202,15 @@ def send_email(items):
     if not all((sender, password, to)):
         print('Mail not configured: no email sent.')
         return False
-    host = os.getenv('SMTP_HOST', 'smtp-relay.brevo.com')
-    port = int(os.getenv('SMTP_PORT', '587'))
+    host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+    port = int(os.getenv('SMTP_PORT', '465'))
     msg = EmailMessage()
-    msg['From'] = os.getenv('SMTP_FROM', sender).strip()
+    msg['From'] = sender
     msg['To'] = to
     msg['Subject'] = f'Boston Terrier watch: {len(items)} new possible match(es)'
     msg.set_content('Possible matches (verify availability and adoption terms):\n\n' + '\n\n'.join(
         f"{x['title']}\n{x['source']}\n{x['url']}\n{x['description']}" for x in items))
-    with smtplib.SMTP(host, port, timeout=25) as smtp:
-        smtp.ehlo()
-        smtp.starttls()
-        smtp.ehlo()
+    with smtplib.SMTP_SSL(host, port, timeout=25) as smtp:
         smtp.login(sender, password)
         smtp.send_message(msg)
     return True
@@ -167,6 +236,7 @@ def main():
     fresh = []
     current = []
     has_history = bool(state.get('history'))
+    pending = state.setdefault('pending_email', {})
     vision = None
     with requests.Session() as session:
         for source in config['sources']:
@@ -180,9 +250,18 @@ def main():
                         from vision import BreedTriage
                         vision = BreedTriage()
                     results = fetch_rss(source, config, session, vision=vision)
+                elif source['type'] in ('yad4', 'yad4_visual'):
+                    if source['type'] == 'yad4_visual' and vision is None:
+                        from vision import BreedTriage
+                        vision = BreedTriage()
+                    results, detail = fetch_yad4(source, config, session, vision if source['type'] == 'yad4_visual' else None)
                 else:
                     raise ValueError('Unsupported source type: ' + source['type'])
-                outcomes.append({'name': source['name'], 'status': 'ok', 'matches': len(results)})
+                status = 'ok'
+                if source['type'] == 'yad4_visual' and detail['images_scored'] == 0:
+                    status = 'warning'
+                    detail['detail'] = 'Cards parsed, but no images classified; visual coverage unverified'
+                outcomes.append({'name': source['name'], 'status': status, 'matches': len(results), **(detail if source['type'] in ('yad4', 'yad4_visual') else {})})
                 current.extend(results)
             except Exception as exc:
                 outcomes.append({'name': source['name'], 'status': 'error', 'detail': str(exc)[:180]})
@@ -196,14 +275,21 @@ def main():
     state['last_run'] = NOW
     state['last_sources'] = outcomes
     state['history'] = (state.get('history', []) + [{'at': NOW, 'new': len(fresh), 'sources_ok': sum(x['status'] == 'ok' for x in outcomes)}])[-300:]
-    # On first run, record existing listings but do not send a backlog by default.
+    # Preserve unsent alerts across SMTP failures; never silently lose a discovery.
     is_first_run = not has_history
-    should_send = bool(fresh) and (not is_first_run or config.get('first_run_email', False))
+    if not is_first_run or config.get('first_run_email', False):
+        for item in fresh:
+            pending[item['id']] = item
     mail_error = None
-    if should_send:
+    if pending:
         try:
-            sent = send_email(fresh)
-            state['last_email'] = NOW if sent else state.get('last_email')
+            sent = send_email(list(pending.values())[:20])
+            if sent:
+                for key in list(pending)[:20]:
+                    pending.pop(key, None)
+                state['last_email'] = NOW
+            else:
+                mail_error = 'Email missing SMTP configuration; pending matches retained'
         except Exception as exc:
             mail_error = str(exc)[:180]
             print(f'EMAIL ERROR: {exc}', file=sys.stderr)
@@ -216,7 +302,7 @@ def main():
                          'matches': sorted(seen.values(), key=lambda x: x['first_seen'], reverse=True)[:200],
                          'recent_runs': state['history'][-30:],
                          'email_configured': bool(os.getenv('SMTP_USER') and os.getenv('SMTP_PASSWORD') and os.getenv('ALERT_EMAIL')),
-                         'email_error': mail_error})
+                         'email_error': mail_error, 'pending_email_count': len(pending)})
     print(f"Sources: {len(outcomes)}; new matches: {len(fresh)}; retained: {len(seen)}")
     # Leave artifacts on disk for diagnosis even if a source fails.
     return 0
