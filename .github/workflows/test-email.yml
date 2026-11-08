@@ -1,0 +1,42 @@
+
+name: Test Boston Watch Email
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send test email
+        env:
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          python - <<'PY'
+          import os
+          import smtplib
+          from email.message import EmailMessage
+
+          sender = os.environ["SMTP_USER"]
+          password = os.environ["SMTP_PASSWORD"]
+          recipient = os.environ["ALERT_EMAIL"]
+
+          msg = EmailMessage()
+          msg["From"] = sender
+          msg["To"] = recipient
+          msg["Subject"] = "Boston Watch - Test Successful"
+          msg.set_content(
+              "Boston Watch email alerts are working!"
+          )
+
+          with smtplib.SMTP_SSL(
+              "smtp.gmail.com", 465, timeout=30
+          ) as smtp:
+              smtp.login(sender, password)
+              smtp.send_message(msg)
+
+          print("Test email sent successfully.")
+          PY
+  
