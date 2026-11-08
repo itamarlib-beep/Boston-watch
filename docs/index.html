@@ -5,7 +5,7 @@
 </style></head><body><div class="wrap"><header class="hero"><h1>🐾 Boston Watch</h1><p>מחפשים בית לבוסטון טרייר · ניטור אוטומטי של מקורות ציבוריים בישראל</p></header>
 <section class="stats"><div class="stat"><span class="muted">התאמות שנמצאו</span><strong id="count">—</strong></div><div class="stat"><span class="muted">בדיקה אחרונה (שעון ישראל)</span><strong id="updated" style="font-size:18px">—</strong></div><div class="stat"><span class="muted">מקורות פעילים</span><strong id="sources">—</strong></div></section>
 <section class="panel"><h2>מצב המקורות</h2><div id="status" class="mini muted">טוען נתונים…</div></section>
-<section class="panel"><h2>התאמות אפשריות</h2><p class="muted mini">הופעה כאן אינה אישור לכך שהכלב עדיין זמין. יש ליצור קשר עם המפרסם ולאמת.</p><div class="grid" id="items"></div></section>
+<section class="panel"><h2>התאמות אפשריות</h2><p class="muted mini">התאמות חזותיות הן מועמדות לבדיקה, לא זיהוי גזע ודאי. הופעה כאן אינה אישור לכך שהכלב עדיין זמין. יש ליצור קשר עם המפרסם ולאמת.</p><div class="grid" id="items"></div></section>
 <footer>האתר מתעדכן בעקבות בדיקות GitHub Actions. הבדיקות עלולות להתעכב; אין כיסוי מובטח לפייסבוק, ליד2 או לכלל העמותות.</footer></div>
 <script>
 const $=id=>document.getElementById(id);
@@ -14,7 +14,7 @@ const el=(tag,txt,cls)=>{const n=document.createElement(tag);if(txt!=null)n.text
 fetch('./data.json?ts='+Date.now()).then(r=>{if(!r.ok)throw Error('No data yet');return r.json()}).then(d=>{
  $('count').textContent=d.matches.length;$('updated').textContent=fmt(d.updated_at);
  $('sources').textContent=d.sources.filter(s=>s.status==='ok').length+' / '+d.sources.length;
- $('status').replaceChildren(...d.sources.map(s=>{const p=el('p');p.append(el('span',s.status==='ok'?'תקין':'שגיאה',s.status==='ok'?'pill':'pill bad'),' ',el('span',' '+s.name+' · '+(s.status==='ok'?'התאמות: '+s.matches:s.detail)));return p;}));
+ $('status').replaceChildren(...d.sources.map(s=>{const p=el('p');p.append(el('span',s.status==='ok'?'נסרק':s.status==='warning'?'חלקי':'בעיה',s.status==='ok'?'pill':'pill bad'),' ',el('span',' '+s.name+' · '+(s.status==='ok'?'התאמות: '+s.matches+(s.cards_seen!=null?' · מודעות שזוהו: '+s.cards_seen+' · תמונות שנבדקו: '+s.images_scored:''):s.status==='warning'?'מודעות זוהו, אך התמונות לא נותחו: '+s.detail:s.detail)));return p;}));
  if(!d.matches.length){$('items').append(el('div','לא זוהו מודעות מתאימות עד כה. הסוכן ממשיך לבדוק.','empty'));return;}
  d.matches.forEach(x=>{const card=el('article',null,'item');if(x.image&&x.image.startsWith('https://')){const img=el('img');img.src=x.image;img.alt='תמונת המודעה';img.loading='lazy';card.append(img)}const h=el('h3');const a=el('a',x.title);a.href=x.url;a.target='_blank';a.rel='noopener noreferrer';h.append(a);if(x.match_reason==='visual_candidate'){card.append(el('span','דמיון חזותי בלבד — לבדיקה','pill'));}card.append(h,el('div',x.source+' · זוהה לראשונה: '+fmt(x.first_seen),'mini muted'),el('p',x.description));$('items').append(card)})
 }).catch(e=>{$('status').textContent='אין נתונים זמינים עדיין. יש להריץ את הפעולה הראשונה ב-GitHub Actions.';$('count').textContent='0';$('updated').textContent='—';$('sources').textContent='—';});
