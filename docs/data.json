@@ -1,1 +1,25 @@
-{"updated_at":null,"sources":[],"matches":[],"recent_runs":[],"email_configured":false}
+{
+  "updated_at": "2026-11-08T09:35:42+00:00",
+  "sources": [
+    {
+      "name": "Findog - adoption",
+      "status": "ok",
+      "matches": 0
+    },
+    {
+      "name": "Findog - rehoming",
+      "status": "ok",
+      "matches": 0
+    }
+  ],
+  "matches": [],
+  "recent_runs": [
+    {
+      "at": "2026-11-08T09:35:42+00:00",
+      "new": 0,
+      "sources_ok": 2
+    }
+  ],
+  "email_configured": true,
+  "email_error": null
+}
