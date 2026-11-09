@@ -4,12 +4,13 @@ import hashlib
 import html
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from email.message import EmailMessage
 from pathlib import Path
 from urllib.parse import urljoin, urlparse, parse_qs
 import smtplib
 import sys
+import re
 
 import requests
 from bs4 import BeautifulSoup
@@ -45,6 +46,100 @@ def listing(source, title, url, description='', image=''):
             'source': source, 'first_seen': NOW}
 
 
+def money_from_text(text):
+    """Only prices attached to a shekel symbol or labeled as a price; never infer from dates/IDs."""
+    text = (text or '').replace('\u200f', '').replace('\u200e', '')
+    patterns = [r'(?:מחיר\s*[:\-]?\s*)([\d,]+)\s*(?:₪|ש[״\"]?ח)?',
+                r'([\d,]+)\s*(?:₪|ש[״\"]?ח)']
+    for pattern in patterns:
+        m = re.search(pattern, text)
+        if m:
+            n = int(m.group(1).replace(',', ''))
+            return n
+    return None
+
+
+def parse_ad_date(text, now=None):
+    """Parse only explicit full dates, no inference from first_seen or page scrape time."""
+    text = text or ''
+    for regex, fmt in ((r'(?<!\d)(\d{1,2}[./-]\d{1,2}[./-]\d{4})(?!\d)', '%d/%m/%Y'),
+                       (r'(?<!\d)(\d{4}-\d{2}-\d{2})(?!\d)', '%Y-%m-%d')):
+        m = re.search(regex, text)
+        if not m: continue
+        value = m.group(1).replace('.', '/').replace('-', '/') if fmt.startswith('%d') else m.group(1)
+        try: return datetime.strptime(value, fmt).replace(tzinfo=timezone.utc).date()
+        except ValueError: pass
+    return None
+
+
+def sale_eligibility(price, posted, config, today=None):
+    """Unknown prices/dates stay visible as unverified, not incorrectly called cheap/recent."""
+    sale = config.get('sale', {})
+    if not sale.get('enabled', False): return False, 'sales_disabled'
+    today = today or datetime.now(timezone.utc).date()
+    if posted is not None:
+        age = (today - posted).days
+        if age > int(sale.get('lookback_days', 90)) or age < -1:
+            return False, 'outside_date_window'
+    elif not sale.get('include_unknown_dates', True):
+        return False, 'date_unknown'
+    if price is None:
+        return (bool(sale.get('include_unknown_price', True)), 'price_unknown')
+    if price <= int(sale.get('symbolic_price_ceiling', 10)):
+        return (bool(sale.get('include_symbolic_price', True)), 'symbolic_price_unverified')
+    if price > int(sale.get('max_price_ils', 4000)):
+        return False, 'over_budget'
+    return True, 'price_within_budget'
+
+
+def mark_sale(item, price, posted, reason):
+    item.update({'listing_type': 'sale', 'price_ils': price, 'price_status': reason,
+                 'posted_date': posted.isoformat() if posted else None,
+                 'date_status': 'verified_date' if posted else 'unknown_date',
+                 'availability': 'unverified'})
+    return item
+
+
+def is_probably_boston(text, config):
+    return any(norm(key) in norm(text) for key in config.get('keywords', []))
+
+
+def fetch_homeless(source, config, session):
+    """Parse individual /pets/viewad links only; ignore promoted ads and unrelated table rows."""
+    response = session.get(source['url'], headers=HEADERS, timeout=25)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.text, 'html.parser')
+    results, visited = [], set()
+    # Prefer HTML listing table rows, which contain the price and update date.
+    candidates = soup.select('tr')
+    for row in candidates:
+        anchors = [a for a in row.select('a[href]') if re.search(r'/pets/viewad[,%2c]', a.get('href', ''), re.I)]
+        if not anchors: continue
+        text = row.get_text(' ', strip=True)
+        if not is_probably_boston(text, config): continue
+        a = anchors[0]
+        url = urljoin(response.url, a.get('href'))
+        if url in visited: continue
+        visited.add(url)
+        # Price/date live in row cells, not in arbitrary promoted snippets.
+        cells = [cell.get_text(' ', strip=True) for cell in row.select('td')]
+        price_cell = next((c for c in cells if '₪' in c), '')
+        date_cell = next((c for c in cells if parse_ad_date(c)), '')
+        price = money_from_text(price_cell)
+        posted = parse_ad_date(date_cell)
+        eligible, reason = sale_eligibility(price, posted, config)
+        if not eligible: continue
+        image = image_url_from(row, response.url)
+        item = listing(source['name'], 'בוסטון טרייר — הומלס', url, text, image)
+        results.append(mark_sale(item,price,posted,reason))
+    # If page has 0 ads, a healthy empty page is acceptable. But if it claims ads and
+    # markup has no individual links, report warning instead of falsely claiming success.
+    page_text = soup.get_text(' ', strip=True)
+    if not candidates or ('מודעות עדכניות' in page_text and re.search(r'\b[1-9]\d*\s+מודעות עדכניות', page_text) and not visited):
+        raise ValueError('Homeless advert rows could not be verified; inspect page structure')
+    return results
+
+
 def fetch_findog(source, config, session):
     resp = session.get(source['url'], timeout=25, headers=HEADERS)
     resp.raise_for_status()
@@ -67,11 +162,21 @@ def fetch_findog(source, config, session):
         parent = a.find_parent(['article', 'li', 'div']) or a
         title = a.get_text(' ', strip=True) or parent.get_text(' ', strip=True)[:100]
         context = parent.get_text(' ', strip=True)[:500]
-        if not match(title + ' ' + context, config):
+        if source.get('listing_type') == 'sale':
+            if not is_probably_boston(title + ' ' + context, config): continue
+            # Listing pages may omit dates/prices: retain as unverified, not 'recent'.
+            price = money_from_text(context)
+            posted = parse_ad_date(context)
+            eligible, reason = sale_eligibility(price, posted, config)
+            if not eligible: continue
+        elif not match(title + ' ' + context, config):
             continue
         img = parent.find('img')
         src = urljoin(source['url'], img.get('src', '')) if img and img.get('src') else ''
-        results.append(listing(source['name'], title, href, context, src))
+        item = listing(source['name'], title, href, context, src)
+        if source.get('listing_type') == 'sale': item = mark_sale(item, price, posted, reason)
+        else: item['listing_type'] = 'adoption'
+        results.append(item)
     return results
 
 
@@ -128,6 +233,7 @@ def fetch_yad4(source, config, session, vision=None):
         if text_candidate:
             row = listing(source['name'], label[:95], href, label, image)
             row['match_reason'] = 'text'
+            row['listing_type'] = 'adoption'
             results.append(row)
             continue
         if vision is None or not image:
@@ -139,6 +245,7 @@ def fetch_yad4(source, config, session, vision=None):
                 row = listing(source['name'], label[:95], href, label, image)
                 row.update(prediction)
                 row['match_reason'] = 'visual_candidate'
+                row['listing_type'] = 'adoption'
                 results.append(row)
         except Exception as exc:
             print(f'VISION SKIP {href}: {exc}', file=sys.stderr)
@@ -175,6 +282,7 @@ def fetch_rss(source, config, session, vision=None):
         if text_match:
             item = listing(source['name'], title, link, summary, rss_image(entry))
             item['match_reason'] = 'text'
+            item['listing_type'] = 'adoption'
             results.append(item)
             continue
         if vision is None or any(norm(word) in norm(title + ' ' + summary) for word in config.get('exclude_keywords', [])):
@@ -189,6 +297,7 @@ def fetch_rss(source, config, session, vision=None):
                 item = listing(source['name'], title, link, summary, image_url)
                 item.update(output)
                 item['match_reason'] = 'visual_candidate'
+                item['listing_type'] = 'adoption'
                 results.append(item)
         except Exception as exc:
             print(f'VISION SKIP {link}: {exc}', file=sys.stderr)
@@ -202,15 +311,18 @@ def send_email(items):
     if not all((sender, password, to)):
         print('Mail not configured: no email sent.')
         return False
-    host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
-    port = int(os.getenv('SMTP_PORT', '465'))
+    host = os.getenv('SMTP_HOST', 'smtp-relay.brevo.com')
+    port = int(os.getenv('SMTP_PORT', '587'))
     msg = EmailMessage()
-    msg['From'] = sender
+    msg['From'] = os.getenv('SMTP_FROM', sender).strip()
     msg['To'] = to
     msg['Subject'] = f'Boston Terrier watch: {len(items)} new possible match(es)'
     msg.set_content('Possible matches (verify availability and adoption terms):\n\n' + '\n\n'.join(
-        f"{x['title']}\n{x['source']}\n{x['url']}\n{x['description']}" for x in items))
-    with smtplib.SMTP_SSL(host, port, timeout=25) as smtp:
+        f"{x['title']}\n{x['source']}\n{x['url']}\nType: {x.get('listing_type', 'adoption')}\nPrice (ILS): {x.get('price_ils', 'unknown')}\nPrice status: {x.get('price_status', 'not_applicable')}\nAd date: {x.get('posted_date') or 'unknown'}\n{x['description']}" for x in items))
+    with smtplib.SMTP(host, port, timeout=25) as smtp:
+        smtp.ehlo()
+        smtp.starttls()
+        smtp.ehlo()
         smtp.login(sender, password)
         smtp.send_message(msg)
     return True
@@ -243,6 +355,8 @@ def main():
             try:
                 if source['type'] == 'findog':
                     results = fetch_findog(source, config, session)
+                elif source['type'] == 'homeless_sale':
+                    results = fetch_homeless(source, config, session)
                 elif source['type'] == 'rss':
                     results = fetch_rss(source, config, session)
                 elif source['type'] == 'rss_visual':
