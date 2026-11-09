@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-09T13:27:25+00:00",
+  "updated_at": "2026-11-09T15:15:53+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
@@ -11,6 +11,11 @@
       "image_coverage": "attempted"
     },
     {
+      "name": "Homeless — בוסטון טרייר למכירה",
+      "status": "ok",
+      "matches": 1
+    },
+    {
       "name": "Findog - adoption",
       "status": "error",
       "detail": "Findog redirected adoption/rehoming page to sales; source not trusted"
@@ -19,9 +24,29 @@
       "name": "Findog - rehoming",
       "status": "error",
       "detail": "Findog redirected adoption/rehoming page to sales; source not trusted"
+    },
+    {
+      "name": "Findog — בוסטון טרייר למכירה",
+      "status": "ok",
+      "matches": 0
     }
   ],
   "matches": [
+    {
+      "id": "03e72112cb9a26a20f99",
+      "title": "בוסטון טרייר — הומלס",
+      "url": "https://www.homeless.co.il/pets/viewad,182014.aspx",
+      "description": "כלבים בוסטון טרייר למכירה בוסטון טרייר עם תעודות יוחסין \r\nיש 2 חיסונים ושבב 1 ₪ 02/11/2026",
+      "image": "https://uploads.homeless.co.il/pets/202512/300/nvFile5122089.jpeg",
+      "source": "Homeless — בוסטון טרייר למכירה",
+      "first_seen": "2026-11-09T15:15:53+00:00",
+      "listing_type": "sale",
+      "price_ils": 1,
+      "price_status": "symbolic_price_unverified",
+      "posted_date": "2026-11-02",
+      "date_status": "verified_date",
+      "availability": "unverified"
+    },
     {
       "id": "e0c041f0c55df09f39f3",
       "title": "הצלת חיים! דיאנה נקבה | אחר | 6 שנים דיאנה המתוקה בת 6, מעוקרת ומחוסנת.\nכלבה נעימה, שקטה ועדינה",
@@ -193,9 +218,14 @@
       "at": "2026-11-09T13:27:25+00:00",
       "new": 0,
       "sources_ok": 1
+    },
+    {
+      "at": "2026-11-09T15:15:53+00:00",
+      "new": 1,
+      "sources_ok": 3
     }
   ],
   "email_configured": true,
-  "email_error": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1011)",
-  "pending_email_count": 2
+  "email_error": null,
+  "pending_email_count": 0
 }
