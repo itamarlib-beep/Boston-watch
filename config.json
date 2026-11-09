@@ -7,6 +7,11 @@
       "max_cards": 25
     },
     {
+      "name": "Homeless — בוסטון טרייר למכירה",
+      "type": "homeless_sale",
+      "url": "https://www.homeless.co.il/pets/iNumber4=3328"
+    },
+    {
       "name": "Findog - adoption",
       "type": "findog",
       "url": "https://www.findog.co.il/Dogs/ByCat/29/%D7%91%D7%95%D7%A1%D7%98%D7%95%D7%9F-%D7%98%D7%A8%D7%99%D7%99%D7%A8?type=3"
@@ -15,6 +20,12 @@
       "name": "Findog - rehoming",
       "type": "findog",
       "url": "https://www.findog.co.il/Dogs/ByCat/29/%D7%91%D7%95%D7%A1%D7%98%D7%95%D7%9F-%D7%98%D7%A8%D7%99%D7%99%D7%A8?type=2"
+    },
+    {
+      "name": "Findog — בוסטון טרייר למכירה",
+      "type": "findog",
+      "listing_type": "sale",
+      "url": "https://www.findog.co.il/Dogs/ByCat/29/%D7%91%D7%95%D7%A1%D7%98%D7%95%D7%9F-%D7%98%D7%A8%D7%99%D7%99%D7%A8?type=1"
     }
   ],
   "keywords": [
@@ -24,11 +35,16 @@
     "boston-terrier",
     "בוסטון מעורב"
   ],
-  "exclude_keywords": [
-    "למכירה",
-    "מחיר",
-    "לרכישה"
-  ],
+  "exclude_keywords": [],
   "first_run_email": false,
-  "vision_min_score": 0.08
+  "vision_min_score": 0.08,
+  "sale": {
+    "enabled": true,
+    "max_price_ils": 4000,
+    "lookback_days": 90,
+    "include_unknown_price": true,
+    "include_symbolic_price": true,
+    "symbolic_price_ceiling": 10,
+    "include_unknown_dates": true
+  }
 }
