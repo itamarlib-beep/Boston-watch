@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-09T09:23:31+00:00",
+  "updated_at": "2026-11-09T11:09:06+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
       "status": "ok",
-      "matches": 0,
+      "matches": 1,
       "cards_seen": 24,
       "cards_checked": 24,
       "images_scored": 24,
@@ -22,6 +22,26 @@
     }
   ],
   "matches": [
+    {
+      "id": "e0c041f0c55df09f39f3",
+      "title": "הצלת חיים! דיאנה נקבה | אחר | 6 שנים דיאנה המתוקה בת 6, מעוקרת ומחוסנת.\nכלבה נעימה, שקטה ועדינה",
+      "url": "https://yad4.co.il/animal/689d9a05bb480bbe3a732c82",
+      "description": "הצלת חיים! דיאנה נקבה | אחר | 6 שנים דיאנה המתוקה בת 6, מעוקרת ומחוסנת.\nכלבה נעימה, שקטה ועדינה, שחיה כל חייה בבית.\nכלבת משפחה אמיתית, שי... לפרטים",
+      "image": "https://yad4.s3.amazonaws.com/images/b34f1095-fdae-47cd-885b-7f82a2eed16d.png",
+      "source": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
+      "first_seen": "2026-11-09T11:09:06+00:00",
+      "breed_score": 0.2314,
+      "top_breed": "kelpie",
+      "top5": [
+        "kelpie",
+        "Boston bull",
+        "American Staffordshire terrier",
+        "Staffordshire bullterrier",
+        "Italian greyhound"
+      ],
+      "model": "MobileNetV3-Small ImageNet-1K",
+      "match_reason": "visual_candidate"
+    },
     {
       "id": "ea846961f65a4d6857e8",
       "title": "בר זכר | מעורב | 1 שנים אני בר🌽\nכלב צעיר, שמח ומלא אהבה שמחפש את המשפחה שתהיה שלי לתמיד. מחוסן,",
@@ -158,9 +178,14 @@
       "at": "2026-11-09T09:23:31+00:00",
       "new": 0,
       "sources_ok": 1
+    },
+    {
+      "at": "2026-11-09T11:09:06+00:00",
+      "new": 1,
+      "sources_ok": 1
     }
   ],
   "email_configured": true,
   "email_error": "[SSL: WRONG_VERSION_NUMBER] wrong version number (_ssl.c:1011)",
-  "pending_email_count": 1
+  "pending_email_count": 2
 }
