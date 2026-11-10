@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-10T11:01:16+00:00",
+  "updated_at": "2026-11-10T11:59:27+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
@@ -12,8 +12,8 @@
     },
     {
       "name": "Homeless — בוסטון טרייר למכירה",
-      "status": "ok",
-      "matches": 1
+      "status": "error",
+      "detail": "403 Client Error: Forbidden for url: https://www.homeless.co.il/pets/iNumber4=3328"
     },
     {
       "name": "Findog - adoption",
@@ -89,11 +89,6 @@
     }
   ],
   "recent_runs": [
-    {
-      "at": "2026-11-08T22:48:00+00:00",
-      "new": 0,
-      "sources_ok": 1
-    },
     {
       "at": "2026-11-08T23:46:56+00:00",
       "new": 0,
@@ -238,6 +233,11 @@
       "at": "2026-11-10T11:01:16+00:00",
       "new": 0,
       "sources_ok": 3
+    },
+    {
+      "at": "2026-11-10T11:59:27+00:00",
+      "new": 0,
+      "sources_ok": 2
     }
   ],
   "email_configured": true,
