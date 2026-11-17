@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-17T06:12:32+00:00",
+  "updated_at": "2026-11-17T07:33:10+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
       "status": "ok",
-      "matches": 0,
+      "matches": 2,
       "cards_seen": 24,
       "cards_checked": 24,
       "images_scored": 24,
@@ -32,6 +32,48 @@
     }
   ],
   "matches": [
+    {
+      "id": "b88240985dbba15c5ca0",
+      "title": "נילס זכר | מעורב | 1 שנים נילס הוא כלב חברותי מאוד לאנשים, מלא שמחת חיים ואהבה. אוהב לצאת לטיול",
+      "url": "https://yad4.co.il/animal/69eda4303930e66bea824fd4",
+      "description": "נילס זכר | מעורב | 1 שנים נילס הוא כלב חברותי מאוד לאנשים, מלא שמחת חיים ואהבה. אוהב לצאת לטיולים, לגלות מקומות חדשים ולהיות ח... לפרטים",
+      "image": "https://yad4.s3.amazonaws.com/images/d04d513a-0494-4fe1-9978-b411024900ff.png",
+      "source": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
+      "first_seen": "2026-11-17T07:33:10+00:00",
+      "breed_score": 0.2683,
+      "top_breed": "basenji",
+      "top5": [
+        "basenji",
+        "Boston bull",
+        "Ibizan hound",
+        "whippet",
+        "Italian greyhound"
+      ],
+      "model": "MobileNetV3-Small ImageNet-1K",
+      "match_reason": "visual_candidate",
+      "listing_type": "adoption"
+    },
+    {
+      "id": "bc79e5b5eb3a5a7cee66",
+      "title": "פנדה זכר | מעורב, בורדר קולי | 10 שנים פנדה כלב עם אופי מיוחד מאוד, הוא יכול להיות מעט חשדן במפ",
+      "url": "https://yad4.co.il/animal/66f667c2dd8d3a349c5043b8",
+      "description": "פנדה זכר | מעורב, בורדר קולי | 10 שנים פנדה כלב עם אופי מיוחד מאוד, הוא יכול להיות מעט חשדן במפגש הראשוני, אבל ברגע שנותנים לו רגע להכיר הו... לפרטים",
+      "image": "https://yad4.s3.amazonaws.com/images/93cd6d2d-8dc3-4a75-aeed-8459be0725aa.png",
+      "source": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
+      "first_seen": "2026-11-17T07:33:10+00:00",
+      "breed_score": 0.1855,
+      "top_breed": "Cardigan",
+      "top5": [
+        "Cardigan",
+        "Boston bull",
+        "kelpie",
+        "Border collie",
+        "Eskimo dog"
+      ],
+      "model": "MobileNetV3-Small ImageNet-1K",
+      "match_reason": "visual_candidate",
+      "listing_type": "adoption"
+    },
     {
       "id": "4f9172c1da5ef1e8f8fb",
       "title": "חדש באתר ניקה נקבה | מעורב, רועה גרמני | 1 שנים כלבה מתוקה ואנרגטית מאוד!\nגורונת שרק מחפשת תשומ",
@@ -110,11 +152,6 @@
     }
   ],
   "recent_runs": [
-    {
-      "at": "2026-11-15T14:01:48+00:00",
-      "new": 0,
-      "sources_ok": 3
-    },
     {
       "at": "2026-11-15T14:54:54+00:00",
       "new": 0,
@@ -258,6 +295,11 @@
     {
       "at": "2026-11-17T06:12:32+00:00",
       "new": 0,
+      "sources_ok": 3
+    },
+    {
+      "at": "2026-11-17T07:33:10+00:00",
+      "new": 2,
       "sources_ok": 3
     }
   ],
