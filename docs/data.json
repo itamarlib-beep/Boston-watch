@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T21:05:51+00:00",
+  "updated_at": "2026-11-18T22:01:46+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
@@ -12,8 +12,8 @@
     },
     {
       "name": "Homeless — בוסטון טרייר למכירה",
-      "status": "ok",
-      "matches": 1
+      "status": "error",
+      "detail": "HTTPSConnectionPool(host='www.homeless.co.il', port=443): Read timed out. (read timeout=25)"
     },
     {
       "name": "Findog - adoption",
@@ -152,11 +152,6 @@
     }
   ],
   "recent_runs": [
-    {
-      "at": "2026-11-17T06:12:32+00:00",
-      "new": 0,
-      "sources_ok": 3
-    },
     {
       "at": "2026-11-17T07:33:10+00:00",
       "new": 2,
@@ -301,6 +296,11 @@
       "at": "2026-11-18T21:05:51+00:00",
       "new": 0,
       "sources_ok": 3
+    },
+    {
+      "at": "2026-11-18T22:01:46+00:00",
+      "new": 0,
+      "sources_ok": 2
     }
   ],
   "email_configured": true,
