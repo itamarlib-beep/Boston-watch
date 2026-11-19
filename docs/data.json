@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-19T17:20:07+00:00",
+  "updated_at": "2026-11-19T19:13:18+00:00",
   "sources": [
     {
       "name": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
       "status": "ok",
-      "matches": 0,
+      "matches": 1,
       "cards_seen": 24,
       "cards_checked": 24,
       "images_scored": 24,
@@ -32,6 +32,27 @@
     }
   ],
   "matches": [
+    {
+      "id": "8bb5fc922e154240de5a",
+      "title": "הוגו זכר | מעורב | 1 שנים הוגו הוא מעורב בגודל בינוני, הובא ע\"י השירות הוטרינרי של חיפה לאחר שנ",
+      "url": "https://yad4.co.il/animal/69db494d2ba232cf84eb0ac0",
+      "description": "הוגו זכר | מעורב | 1 שנים הוגו הוא מעורב בגודל בינוני, הובא ע\"י השירות הוטרינרי של חיפה לאחר שנמצא עזוב ביערות הכרמל.\nכלב מאד... לפרטים",
+      "image": "https://yad4.s3.amazonaws.com/images/de8ad3b4-1543-4945-b578-7cd8f6bb2c02.png",
+      "source": "יד4 — מודעות כלבים כלליות (זיהוי תמונה)",
+      "first_seen": "2026-11-19T19:13:18+00:00",
+      "breed_score": 0.3419,
+      "top_breed": "Boston bull",
+      "top5": [
+        "Boston bull",
+        "Great Dane",
+        "American Staffordshire terrier",
+        "whippet",
+        "boxer"
+      ],
+      "model": "MobileNetV3-Small ImageNet-1K",
+      "match_reason": "visual_candidate",
+      "listing_type": "adoption"
+    },
     {
       "id": "b88240985dbba15c5ca0",
       "title": "נילס זכר | מעורב | 1 שנים נילס הוא כלב חברותי מאוד לאנשים, מלא שמחת חיים ואהבה. אוהב לצאת לטיול",
@@ -152,11 +173,6 @@
     }
   ],
   "recent_runs": [
-    {
-      "at": "2026-11-18T01:30:13+00:00",
-      "new": 0,
-      "sources_ok": 3
-    },
     {
       "at": "2026-11-18T03:01:37+00:00",
       "new": 0,
@@ -300,6 +316,11 @@
     {
       "at": "2026-11-19T17:20:07+00:00",
       "new": 0,
+      "sources_ok": 3
+    },
+    {
+      "at": "2026-11-19T19:13:18+00:00",
+      "new": 1,
       "sources_ok": 3
     }
   ],
